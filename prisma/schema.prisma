@@ -1,0 +1,233 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// =======================
+// ENUMS
+// =======================
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
+  OTHER
+}
+
+enum PlanType {
+  FREE
+  PREMIUM
+  GOLD
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  GIF
+  VOICE
+  VIDEO_CALL
+}
+
+enum ReportType {
+  SPAM
+  INAPPROPRIATE_PHOTO
+  HARASSMENT
+  FAKE_PROFILE
+  OTHER
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// =======================
+// MODELS
+// =======================
+
+model User {
+  id                 String       @id @default(auto()) @map("_id")
+  email              String       @unique
+  phone              String?      @unique
+  password           String?      // null for OAuth users
+  name               String
+  bio                String?
+  birthDate          DateTime
+  gender             Gender
+  preferredGender    Gender?
+  photos             Photo[]
+  location           Json?        // GeoJSON: { type: "Point", coordinates: [lon, lat] }
+  preferences        Preference?
+  isVerified         Boolean      @default(false)
+  isPremium          Boolean      @default(false)
+  isIncognito        Boolean      @default(false)
+  swipeCount         Int          @default(0)
+  dailyLimit         Int          @default(100) // Freemium: 100 swipes/day
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  // Relationships
+  chats              ChatUser[]   @relation("ChatUserToUser")
+  matches            Match[]      @relation("MatchUsers")
+  sentLikes          Like[]       @relation("LikeSender")
+  receivedLikes      Like[]       @relation("LikeReceiver")
+  subscriptions      Subscription?
+  reports            Report[]     @relation("ReportedUser")
+  reportedBy         Report[]     @relation("ReporterUser")
+
+  @@index([location], type: GiSphere) // Geospatial index
+  @@index([email])
+  @@index([phone])
+  @@index([isPremium])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Photo {
+  id               String   @id @default(auto()) @map("_id")
+  userId           String
+  url              String
+  isMain           Boolean  @default(false)
+  facialAnalysis   Json?    // { attractiveness: 0.92, symmetry: 0.88, age: 28, ... }
+  moderationStatus ModerationStatus @default(PENDING)
+  uploadedAt       DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([moderationStatus])
+  @@map("photos")
+}
+
+model Preference {
+  id             String   @id @default(auto()) @map("_id")
+  userId         String   @unique
+  maxDistance    Int      @default(50) // km
+  minAge         Int      @default(18)
+  maxAge         Int      @default(99)
+  showMe         Gender?
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@map("preferences")
+}
+
+model Match {
+  id         String     @id @default(auto()) @map("_id")
+  users      User[]     @relation("MatchUsers", references: [id])
+  matchedAt  DateTime   @default(now())
+  chat       Chat?
+
+  @@unique([users], map: "unique_match_pair")
+  @@index([matchedAt])
+  @@map("matches")
+}
+
+model Like {
+  id        String   @id @default(auto()) @map("_id")
+  sender    User     @relation("LikeSender", fields: [senderId], references: [id])
+  receiver  User     @relation("LikeReceiver", fields: [receiverId], references: [id])
+  likedAt   DateTime @default(now())
+  senderId  String
+  receiverId String
+
+  @@unique([senderId, receiverId], map: "unique_like")
+  @@index([senderId, receiverId])
+  @@index([likedAt])
+  @@map("likes")
+}
+
+model Chat {
+  id            String       @id @default(auto()) @map("_id")
+  messages      Message[]
+  users         ChatUser[]
+  createdAt     DateTime     @default(now())
+  lastActivity  DateTime?    @default(now())
+
+  @@index([createdAt])
+  @@index([lastActivity])
+  @@map("chats")
+}
+
+model ChatUser {
+  id       String  @id @default(auto()) @map("_id")
+  chat     Chat    @relation("ChatUserToChat", fields: [chatId], references: [id])
+  user     User    @relation("ChatUserToUser", fields: [userId], references: [id])
+  chatId   String
+  userId   String
+  lastRead DateTime?
+
+  @@unique([chatId, userId])
+  @@index([userId])
+  @@index([chatId])
+  @@map("chat_users")
+}
+
+model Message {
+  id        String       @id @default(auto()) @map("_id")
+  chatId    String
+  senderId  String
+  content   String
+  type      MessageType  @default(TEXT)
+  encrypted Boolean      @default(false)
+  mediaUrl  String?
+  sentAt    DateTime     @default(now())
+  readAt    DateTime?
+  chat      Chat         @relation(fields: [chatId], references: [id])
+  sender    User         @relation(fields: [senderId], references: [id])
+
+  @@index([chatId])
+  @@index([senderId])
+  @@index([sentAt])
+  @@index([type])
+  @@map("messages")
+}
+
+model Subscription {
+  id                  String               @id @default(auto()) @map("_id")
+  userId              String               @unique
+  stripeSubscriptionId String
+  plan                PlanType
+  status              SubscriptionStatus
+  currentPeriodEnd    DateTime
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  user                User                 @relation(fields: [userId], references: [id])
+
+  @@index([status])
+  @@index([plan])
+  @@index([currentPeriodEnd])
+  @@map("subscriptions")
+}
+
+model Report {
+  id           String               @id @default(auto()) @map("_id")
+  reporter     User                 @relation("ReporterUser", fields: [reporterId], references: [id])
+  reported     User                 @relation("ReportedUser", fields: [reportedId], references: [id])
+  reporterId   String
+  reportedId   String
+  reason       String
+  content      String?              // Optional: message/photo ID
+  type         ReportType
+  createdAt    DateTime             @default(now())
+  resolved     Boolean              @default(false)
+  resolverId   String?              // Admin who resolved
+  resolvedAt   DateTime?
+
+  @@index([resolved])
+  @@index([type])
+  @@index([reportedId])
+  @@map("reports")
+}
