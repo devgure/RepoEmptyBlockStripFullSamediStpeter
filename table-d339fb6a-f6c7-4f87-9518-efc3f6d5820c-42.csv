@@ -1,0 +1,9 @@
+﻿A,B,C,D
+Metric,Month 1,Month 2,Month 3
+Daily Active Users (DAU),=B2*1.1,=C2*1.1,=D2*1.1
+Conversion Rate (%),3%,3.2%,3.5%
+Paying Users,=B2*B3,=C2*C3,=D2*D3
+Avg. Revenue Per User (ARPU),$9.99,$10.20,$10.50
+Monthly Revenue,=B4*B5,=C4*C5,=D4*D5
+Ad Revenue (non-premium),=(B2-B4)*0.10,=(C2-C4)*0.12,=(D2-D4)*0.15
+Total Revenue,=B6+B7,=C6+C7,=D6+D7

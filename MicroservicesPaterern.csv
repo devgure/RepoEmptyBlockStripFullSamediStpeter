@@ -1,0 +1,16 @@
+﻿Service,        Tech
+
+User Service,"Node.js + Express / NestJS (Auth, Profiles, Preferences)"
+
+Match Service,"Python + FastAPI (Matching Logic, AI Engine)"
+Chat Service,Node.js + Socket.IO / WebRTC (Real-time messaging)
+Location Service,Go / Node.js + Redis + PostGIS (Geo queries)
+
+AI/ML Service,"Python + TensorFlow/PyTorch (Facial analysis, recommendation engine)"
+Notification Service,Node.js + Firebase Cloud Messaging / Web Push
+
+Admin API,NestJS + JWT Auth
+
+Database,"PostgreSQL (relational), MongoDB (user content), Redis (caching, sessions)"
+Storage,AWS S3 / Cloudinary (image/video hosting)
+Search,Elasticsearch (fast profile search)

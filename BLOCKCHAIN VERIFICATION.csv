@@ -1,0 +1,6 @@
+﻿Use Case,Implementation
+Profile Identity,User uploads ID + selfie → hash stored on Polygon (low gas) as ERC-1155 token. Public key linked to wallet.
+Photo Verification,Facial embedding hash + timestamp stored on-chain. Matches live selfie during login.
+Education/Career Proof,Integrate with LinkedIn API (opt-in) → credential hash stored on-chain.
+Anti-Catfish,Any profile without blockchain verification shows “Unverified” badge. Verified = gold shield.
+Ownership,Users own their data. Can port profile to other apps via WalletConnect.

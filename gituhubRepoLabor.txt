@@ -1,0 +1,45 @@
+matchai/
+├── apps/
+│   ├── mobile-app/               # React Native (Expo + TS)
+│   ├── web-client/               # React Web (Tailwind + Redux)
+│   ├── desktop-client/           # React Desktop
+│   └── api-gateway/              # BFF (NestJS + GraphQL)
+│
+├── services/
+│   ├── auth-service/
+│   ├── profile-service/
+│   ├── match-service/
+│   ├── chat-service/             # + E2E encryption
+│   ├── payment-service/          # Stripe + Webhooks
+│   ├── discovery-service/
+│   └── analytics-service/
+│
+├── ai-engine/
+│   └── matching-engine/          # Python AI
+│
+├── admin-dashboard/              # React + Tailwind
+│
+├── shared/
+│   ├── prisma/                   # Schema + seed
+│   ├── types/
+│   └── utils/
+│
+├── infra/
+│   ├── docker/
+│   │   ├── docker-compose.yml
+│   │   └── nginx.conf
+│   └── monitoring/
+│       ├── prometheus.yml
+│       └── grafana/
+│
+├── scripts/
+│   ├── seed.ts
+│   └── encrypt-chat-demo.ts
+│
+├── docs/
+│   ├── postman-collection.json   # Full API collection
+│   └── openapi.yaml
+│
+├── .env.example
+├── docker-compose.yml
+└── README.md

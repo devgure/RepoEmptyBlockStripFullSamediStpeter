@@ -1,0 +1,115 @@
+sparkly/
+│
+├── client/                         # 📱 React Native App (Expo)
+│   ├── App.tsx
+│   ├── screens/
+│   │   ├── OnboardingScreen.tsx
+│   │   ├── SwipeScreen.tsx
+│   │   ├── VideoProfileScreen.tsx
+│   │   └── SupportScreen.tsx
+│   ├── components/
+│   │   ├── GiftButton.tsx
+│   │   ├── AdBanner.tsx
+│   │   └── IcebreakerButton.tsx
+│   ├── hooks/
+│   │   ├── useABTest.ts
+│   │   ├── usePushNotifications.ts
+│   │   └── useAnalytics.ts
+│   ├── services/
+│   │   └── apiClient.ts
+│   ├── navigation/
+│   │   └── StackNavigator.tsx
+│   ├── i18n/
+│   │   ├── en.json
+│   │   └── i18n.ts
+│   └── app.config.ts
+│
+├── admin-dashboard/                # 🖥️ Admin UI (React)
+│   ├── src/
+│   │   ├── pages/
+│   │   │   ├── UsersPage.tsx
+│   │   │   ├── ReportsPage.tsx
+│   │   │   ├── SecurityLogsPage.tsx
+│   │   │   ├── ModerationQueuePage.tsx
+│   │   │   └── RetentionPage.tsx
+│   │   ├── components/
+│   │   └── services/
+│   │       └── adminApi.ts
+│   ├── package.json
+│   └── Dockerfile
+│
+├── marketing-landing/              # 🌐 Marketing Site (Next.js)
+│   ├── pages/
+│   │   └── index.tsx
+│   ├── public/
+│   │   └── logo.svg
+│   ├── styles/
+│   ├── next.config.js
+│   └── package.json
+│
+├── services/                       # ⚙️ Microservices
+│   ├── auth-service/
+│   │   ├── src/
+│   │   │   └── auth/
+│   │   │       ├── auth.controller.ts
+│   │   │       └── auth.service.ts
+│   │   ├── package.json
+│   │   └── Dockerfile
+│   │
+│   ├── ab-test-service/
+│   │   ├── src/
+│   │   │   ├── ab/
+│   │   │   │   ├── ab.controller.ts
+│   │   │   │   └── ab.service.ts
+│   │   │   └── main.ts
+│   │   ├── package.json
+│   │   └── Dockerfile
+│   │
+│   ├── ai-service/
+│   │   ├── app/
+│   │   │   ├── recommend.py
+│   │   │   ├── toxic.py
+│   │   │   ├── icebreaker.py
+│   │   │   └── face_verify.py
+│   │   ├── main.py
+│   │   ├── requirements.txt
+│   │   └── Dockerfile
+│   │
+│   ├── notification-service/
+│   │   ├── src/
+│   │   │   └── notification/
+│   │   │       └── notification.service.ts
+│   │   └── Dockerfile
+│   │
+│   ├── chat-service/
+│   │   └── src/
+│   │       └── chat/
+│   │           ├── chat.gateway.ts
+│   │           └── chat.service.ts
+│   │
+│   ├── media-service/
+│   │   └── src/
+│   │       └── media/
+│   │           └── media.controller.ts
+│   │
+│   └── payment-service/
+│       └── src/
+│           └── payment/
+│               └── payment.controller.ts
+│
+├── infra/
+│   ├── docker/
+│   │   └── docker-compose.yml
+│   ├── nginx/
+│   │   └── nginx.conf
+│   └── terraform/
+│       ├── main.tf
+│       ├── variables.tf
+│       └── outputs.tf
+│
+├── prisma/
+│   └── schema.prisma
+│
+├── .env.example
+├── README.md
+└── package.json

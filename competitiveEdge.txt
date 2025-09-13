@@ -1,0 +1,7 @@
+﻿Feature,Tinder,Hinge,Bumble,Aura
+AI Matchmaking,❌,✅ Basic,✅ Basic,✅✅ Advanced (behavioral + emotional)
+Facial Verification,❌,❌,❌,✅✅ Blockchain + Liveness
+Cross-Platform,✅ Web,✅ Web,✅ Web,✅✅ Native + PWA + Desktop
+Monetization,Subs only,Subs + Boosts,Subs,Subs + Verified Badges + AI Credits
+Privacy,❌,✅,✅,✅✅ Blockchain-owned data
+Scalability,Monolith,Monolith,Monolith,✅ Microservices + Kubernetes

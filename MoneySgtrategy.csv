@@ -1,0 +1,33 @@
+﻿
+
+
+
+Feature,   Type     ,               Price Example
+Premium  Subscription,              Monthly/Yearly,$9.99/month
+Super Like,                         One-time,$0.99
+Boost Profile,       30-min visibility        boost,$2.99
+Undo Last Swipe,       One-time,                  $0.99
+Incognito Mode,            Hide from non-matches,           $2.99/month
+Ad-Supported Free Tier,         Banner ads,                           Free
+
+
+
+create Stripe id key for each item.Monetization Stripe + subscription plan Webhook
+- Freemium: 100 likes/day free
+- Premium: $9.99/month (Stripe or Apple IAP)
+- Gold: $19.99/month (ad-free + boosts)
+$9.99 Premium Tier✅
+$19.99 Gold TierGeofilters & Boosts Pay to appear in specific locations
+Gifts & Virtual Items Send digital gifts in chat
+Undo Last Swipe,       One-time,                  $0.99
+Incognito Mode,            Hide from non-matches,           $2.99/month
+
+✅ Stripe Checkout
+✅ Webhook Handling (Active/Canceled)
+✅ Freemium Model (100 likes/day free)
+✅ AdMob Banner Ads (non-Gold users)
+✅ Environment variables, webhook handlers, frontend buttons, and admin tracking   STRIPE_SECRET_KEY=s
+STRIPE_WEBHOOK_SECRET=
+STRIPE_PREMIUM_PRICE_ID=
+STRIPE_GOLD_PRICE_ID=
+STRIPE_WEBHOOK_URL

@@ -1,0 +1,19 @@
+{
+  "name": "linkr",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "seed": "node scripts/seed-data.js",
+    "deploy": "sh scripts/deploy.sh"
+  },
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*",
+    "gateway"
+  ],
+  "devDependencies": {
+    "turbo": "^1.12.4"
+  }
+}

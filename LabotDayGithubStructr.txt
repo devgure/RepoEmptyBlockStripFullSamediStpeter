@@ -1,0 +1,165 @@
+linkr-monorepo/
+│
+├── apps/
+│   ├── mobile/                     # React Native (Expo)
+│   │   ├── src/
+│   │   │   ├── screens/LoginScreen.tsx
+│   │   │   ├── screens/MatchScreen.tsx
+│   │   │   ├── components/CustomButton.tsx
+│   │   │   ├── components/ProfileCard.tsx
+│   │   │   ├── navigation/AppNavigator.tsx
+│   │   │   ├── services/api.ts
+│   │   │   └── App.tsx
+│   │   ├── app.json
+│   │   ├── babel.config.js
+│   │   ├── tsconfig.json
+│   │   └── package.json
+│   │
+│   ├── web-mobile/                 # PWA (React + Vite)
+│   │   ├── public/
+│   │   ├── src/
+│   │   │   ├── pages/LoginPage.tsx
+│   │   │   ├── pages/DiscoverPage.tsx
+│   │   │   ├── components/
+│   │   │   └── App.tsx
+│   │   ├── vite.config.ts
+│   │   └── package.json
+│   │
+│   ├── web-desktop/                # React Desktop
+│   │   ├── public/
+│   │   ├── src/
+│   │   │   ├── layouts/MainLayout.tsx
+│   │   │   ├── pages/DashboardPage.tsx
+│   │   │   └── App.tsx
+│   │   └── package.json
+│   │
+│   └── admin-dashboard/            # Admin UI
+│       ├── src/
+│       │   ├── views/UsersView.tsx
+│       │   ├── views/AnalyticsView.tsx
+│       │   ├── views/ReportsView.tsx
+│       │   ├── components/Charts/BarChart.tsx
+│       │   ├── components/Tables/UserTable.tsx
+│       │   ├── components/Buttons/ActionBtn.tsx
+│       │   └── App.tsx
+│       └── package.json
+│
+├── packages/
+│   ├── ui/                         # Shared UI
+│   │   ├── src/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Avatar.tsx
+│   │   │   └── Input.tsx
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   ├── api-client/                 # Auto-generated API client
+│   │   ├── src/api.generated.ts
+│   │   ├── openapi.yml
+│   │   └── package.json
+│   │
+│   ├── auth-utils/                 # Auth helpers
+│   │   ├── src/auth.ts
+│   │   └── package.json
+│   │
+│   ├── i18n/                       # Internationalization
+│   │   ├── locales/en.json
+│   │   ├── locales/es.json
+│   │   ├── locales/fr.json
+│   │   └── src/i18n.ts
+│   │
+│   └── config/
+│       └── src/logger.ts
+│
+├── services/
+│   ├── auth-service/               # JWT, OAuth, SMS, Biometrics
+│   │   ├── src/
+│   │   │   ├── controllers/auth.controller.ts
+│   │   │   ├── services/firebase.auth.ts
+│   │   │   ├── strategies/google.strategy.ts
+│   │   │   └── server.ts
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   │
+│   ├── profile-service/
+│   │   ├── src/
+│   │   │   ├── routes/profile.routes.ts
+│   │   │   └── server.ts
+│   │   └── Dockerfile
+│   │
+│   ├── match-service/
+│   │   ├── src/
+│   │   │   ├── services/swipe.service.ts
+│   │   │   └── server.ts
+│   │   └── Dockerfile
+│   │
+│   ├── chat-service/
+│   │   ├── src/
+│   │   │   ├── socket/server.ts
+│   │   │   └── server.ts
+│   │   └── Dockerfile
+│   │
+│   ├── payment-service/
+│   │   ├── src/
+│   │   │   ├── controllers/payment.controller.ts
+│   │   │   └── server.ts
+│   │   └── Dockerfile
+│   │
+│   ├── discovery-service/
+│   │   ├── src/
+│   │   │   ├── services/location.service.ts
+│   │   │   └── server.ts
+│   │   └── Dockerfile
+│   │
+│   ├── notification-service/
+│   │   ├── src/
+│   │   │   ├── services/fcm.service.ts
+│   │   │   └── server.ts
+│   │   └── Dockerfile
+│   │
+│   ├── analytics-service/
+│   │   ├── src/
+│   │   │   ├── services/event.tracker.ts
+│   │   │   └── server.ts
+│   │   └── Dockerfile
+│   │
+│   └── ai-service/                 # Python AI
+│       ├── app/
+│       │   ├── main.py             # FastAPI
+│       │   ├── matching_engine.py
+│       │   └── image_moderation.py
+│       ├── Dockerfile
+│       ├── requirements.txt
+│       └── model/
+│           └── face_model.pkl
+│
+├── gateway/                        # API Gateway (Express + Middleware)
+│   ├── src/
+│   │   ├── middleware/auth.js
+│   │   ├── middleware/rateLimit.js
+│   │   ├── routes/v1/auth.js
+│   │   ├── routes/v1/match.js
+│   │   └── server.js
+│   ├── Dockerfile
+│   └── docker-compose.yml          # Kong + Gateway
+│
+├── shared/
+│   ├── prisma/
+│   │   ├── schema.prisma
+│   │   └── seed.ts
+│   └── types/
+│       └── index.ts
+│
+├── infra/
+│   ├── nginx/
+│   │   └── nginx.conf              # Reverse Proxy
+│   ├── docker/
+│   │   └── docker-compose.yml      # Full stack
+│   └── scripts/
+│       └── setup-ubuntu.sh         # Setup script
+│
+├── .env.example
+├── docker-compose.yml
+├── README.md
+└── package.json
