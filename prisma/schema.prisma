@@ -1,5 +1,4 @@
 // prisma/schema.prisma
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,7 +9,7 @@ datasource db {
 }
 
 // =======================
-// ENUMS
+// ENUMS (unchanged, well done)
 // =======================
 
 enum Gender {
@@ -41,6 +40,23 @@ enum MessageType {
   VIDEO_CALL
 }
 
+enum TransactionType {
+  SUBSCRIPTION
+  UNDO_SWIPE
+  INCOGNITO_MODE
+  VERIFIED_BADGE
+  TIP
+  GIFT
+  SPONSORED_PROFILE
+}
+
+enum TransactionStatus {
+  SUCCESS
+  FAILED
+  PENDING
+  REFUNDED
+}
+
 enum ReportType {
   SPAM
   INAPPROPRIATE_PHOTO
@@ -55,60 +71,114 @@ enum ModerationStatus {
   REJECTED
 }
 
+enum BadgeType {
+  VERIFIED
+  SPONSORED
+  TOP_PICK
+}
+
+enum AdType {
+  BANNER
+  INTERSTITIAL
+  REWARDED
+}
+
 // =======================
-// MODELS
+// NEW: ADMIN & MODERATION
+// =======================
+
+model Admin {
+  id        String   @id @default(auto()) @map("_id")
+  email     String   @unique
+  name      String
+  role      String   @default("MODERATOR") // "MODERATOR", "ADMIN", "SUPER_ADMIN"
+  password  String
+  lastLogin DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admins")
+}
+
+// =======================
+// MODELS — ENHANCED
 // =======================
 
 model User {
   id                 String       @id @default(auto()) @map("_id")
   email              String       @unique
   phone              String?      @unique
-  password           String?      // null for OAuth users
+  password           String?      // null for OAuth
   name               String
   bio                String?
   birthDate          DateTime
   gender             Gender
   preferredGender    Gender?
   photos             Photo[]
-  location           Json?        // GeoJSON: { type: "Point", coordinates: [lon, lat] }
+  location           Json?        // GeoJSON { type: "Point", coordinates: [lon, lat] }
   preferences        Preference?
   isVerified         Boolean      @default(false)
   isPremium          Boolean      @default(false)
-  isIncognito        Boolean      @default(false)
-  swipeCount         Int          @default(0)
-  dailyLimit         Int          @default(100) // Freemium: 100 swipes/day
+  planType           PlanType     @default(FREE)
+  hasBadge           Boolean      @default(false)
+  badgeType          BadgeType?
+  badgePurchasedAt   DateTime?
+  hasIncognito       Boolean      @default(false)
+  incognitoExpiry    DateTime?    // ⚡ TTL index recommended
+  dailySwipes        Int          @default(0)
+  lastSwipeReset     DateTime     @default(now())
+  undoCredits        Int          @default(0)
+  walletAddress      String?      // For $ETI token
+  tokenId            Int?         // NFT ID — set after minting
+  nftTxHash          String?      // Blockchain TX for verification audit
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  // Relationships
+  // Relations
   chats              ChatUser[]   @relation("ChatUserToUser")
   matches            Match[]      @relation("MatchUsers")
   sentLikes          Like[]       @relation("LikeSender")
   receivedLikes      Like[]       @relation("LikeReceiver")
-  subscriptions      Subscription?
+  subscriptions      Subscription[]
+  transactions       Transaction[]
   reports            Report[]     @relation("ReportedUser")
   reportedBy         Report[]     @relation("ReporterUser")
+  giftsSent          Gift[]       @relation("GiftSender")
+  giftsReceived      Gift[]       @relation("GiftReceiver")
+  aiChatSessions     AIChatSession[]
+  blockedUsers       Block[]      @relation("Blocker")
+  blockedBy          Block[]      @relation("Blocked")
 
-  @@index([location], type: GiSphere) // Geospatial index
+  // ⚡ INDEXES — CRITICAL FOR SCALE
+  @@index([location], type: Geo) // MongoDB 2dsphere for location queries
   @@index([email])
   @@index([phone])
   @@index([isPremium])
+  @@index([planType])
   @@index([createdAt])
+  @@index([lastSwipeReset])      // For daily reset cron
+  @@index([incognitoExpiry])     // TTL index for auto-expiry
   @@map("users")
 }
+
+// ⚡ TTL INDEX for incognito mode (auto-expire)
+// Run in MongoDB: db.users.createIndex( { "incognitoExpiry": 1 }, { expireAfterSeconds: 0 } )
 
 model Photo {
   id               String   @id @default(auto()) @map("_id")
   userId           String
   url              String
   isMain           Boolean  @default(false)
-  facialAnalysis   Json?    // { attractiveness: 0.92, symmetry: 0.88, age: 28, ... }
+  facialAnalysis   Json?    // { attractiveness: 0.92, symmetry: 0.88, age: 28, hash: "a1b2c3...", verified: true }
   moderationStatus ModerationStatus @default(PENDING)
   uploadedAt       DateTime @default(now())
+  moderatedBy      String?  // Admin ID who approved/rejected
+  moderatedAt      DateTime?
   user             User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([moderationStatus])
+  @@index([uploadedAt])
   @@map("photos")
 }
 
@@ -128,10 +198,14 @@ model Match {
   id         String     @id @default(auto()) @map("_id")
   users      User[]     @relation("MatchUsers", references: [id])
   matchedAt  DateTime   @default(now())
-  chat       Chat?
+  chat       Chat?      @relation(fields: [chatId], references: [id])
+  chatId     String?    // ⚡ Direct link to chat for faster lookup
 
-  @@unique([users], map: "unique_match_pair")
+  // ⚠️ Unique constraint must be enforced in app logic (Prisma doesn't support array uniqueness)
+  // Use: [user1.id, user2.id].sort().join('-') as matchKey
+
   @@index([matchedAt])
+  @@index([chatId])      // Critical for chat ↔ match joins
   @@map("matches")
 }
 
@@ -143,7 +217,10 @@ model Like {
   senderId  String
   receiverId String
 
-  @@unique([senderId, receiverId], map: "unique_like")
+  // ⚠️ Prevent self-likes in app logic
+  // ⚠️ Unique constraint: senderId != receiverId
+
+  @@unique([senderId, receiverId], name: "unique_like")
   @@index([senderId, receiverId])
   @@index([likedAt])
   @@map("likes")
@@ -153,11 +230,14 @@ model Chat {
   id            String       @id @default(auto()) @map("_id")
   messages      Message[]
   users         ChatUser[]
+  match         Match?       @relation(fields: [matchId], references: [id]) // ⚡ Backlink to Match
+  matchId       String?
   createdAt     DateTime     @default(now())
   lastActivity  DateTime?    @default(now())
 
   @@index([createdAt])
   @@index([lastActivity])
+  @@index([matchId])         // Critical for match → chat
   @@map("chats")
 }
 
@@ -197,7 +277,7 @@ model Message {
 
 model Subscription {
   id                  String               @id @default(auto()) @map("_id")
-  userId              String               @unique
+  userId              String
   stripeSubscriptionId String
   plan                PlanType
   status              SubscriptionStatus
@@ -209,7 +289,27 @@ model Subscription {
   @@index([status])
   @@index([plan])
   @@index([currentPeriodEnd])
+  @@index([userId])
   @@map("subscriptions")
+}
+
+model Transaction {
+  id          String           @id @default(auto()) @map("_id")
+  userId      String
+  type        TransactionType
+  amount      Float
+  currency    String           // "USD", "ETI"
+  status      TransactionStatus @default(PENDING)
+  stripeSessionId String?
+  description String?
+  createdAt   DateTime         @default(now())
+  user        User             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@map("transactions")
 }
 
 model Report {
@@ -219,15 +319,99 @@ model Report {
   reporterId   String
   reportedId   String
   reason       String
-  content      String?              // Optional: message/photo ID
+  content      String?              // message/photo ID
   type         ReportType
   createdAt    DateTime             @default(now())
   resolved     Boolean              @default(false)
-  resolverId   String?              // Admin who resolved
+  resolverId   String?              // Admin ID
   resolvedAt   DateTime?
+  resolver     Admin?               @relation(fields: [resolverId], references: [id])
 
   @@index([resolved])
   @@index([type])
   @@index([reportedId])
+  @@index([createdAt])
   @@map("reports")
+}
+
+model Gift {
+  id          String   @id @default(auto()) @map("_id")
+  sender      User     @relation("GiftSender", fields: [senderId], references: [id])
+  receiver    User     @relation("GiftReceiver", fields: [receiverId], references: [id])
+  senderId    String
+  receiverId  String
+  giftType    String   // "rose", "champagne", "diamond"
+  costInETI   Int
+  sentAt      DateTime @default(now())
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([sentAt])
+  @@map("gifts")
+}
+
+model AIChatSession {
+  id        String   @id @default(auto()) @map("_id")
+  userId    String
+  sessionId String   @unique
+  messages  Json     // [{role: "user", content: "..."}, ...]
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([sessionId])
+  @@map("ai_chat_sessions")
+}
+
+model AdView {
+  id         String   @id @default(auto()) @map("_id")
+  userId     String?
+  adType     AdType
+  shownAt    DateTime @default(now())
+  clicked    Boolean  @default(false)
+  revenue    Float    @default(0.0)
+
+  @@index([userId])
+  @@index([adType])
+  @@index([shownAt])
+  @@map("ad_views")
+}
+
+// =======================
+// NEW: BLOCKING MODEL
+// =======================
+
+model Block {
+  id        String   @id @default(auto()) @map("_id")
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id])
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id])
+  blockerId String
+  blockedId String
+  blockedAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+  @@map("blocks")
+}
+
+// =======================
+// NEW: ADMIN ACTION LOG
+// =======================
+
+model AdminActionLog {
+  id          String   @id @default(auto()) @map("_id")
+  adminId     String
+  action      String   // "USER_BAN", "PHOTO_APPROVE", "GIFT_REFUND"
+  targetId    String?  // userId, photoId, etc.
+  targetType  String?  // "User", "Photo", "Transaction"
+  reason      String?
+  createdAt   DateTime @default(now())
+  admin       Admin    @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("admin_action_logs")
 }
